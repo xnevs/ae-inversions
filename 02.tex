@@ -1,0 +1,134 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[slovene]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage[makeroom]{cancel}
+\usepackage{ulem}
+\usepackage{listings}
+\usepackage[noend]{algpseudocode}
+\usepackage{nameref}
+\usepackage{enumitem}
+
+\normalem
+
+\DeclareMathOperator{\Ex}{E}
+\DeclareMathOperator{\Pro}{P}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+% Ukazi za izreke, trditve, ipd.
+{
+    \theoremstyle{plain}
+    \newtheorem{theorem}{Izrek}[section]
+    \newtheorem{lemma}[theorem]{Lema}
+    \newtheorem{corollary}[theorem]{Posledica}
+    \newtheorem{proposition}[theorem]{Trditev}
+    \newtheorem{claim}[theorem]{Trditev}
+    \newtheorem{conjecture}[theorem]{Hipoteza}
+    \newtheorem{problem}[theorem]{Problem}
+}
+
+{
+    \theoremstyle{definition}
+    \newtheorem{definition}[theorem]{Definicija}
+    \newtheorem{remark}[theorem]{Opomba}
+    \newtheorem{observation}[theorem]{Opazka}
+    \newtheorem{example}[theorem]{Zgled}
+}
+
+\lstset{
+basicstyle=\ttfamily,
+keywordstyle=\ttfamily,
+columns=fixed,
+showstringspaces=false,
+mathescape
+}
+
+\title{2. naloga \\ \normalsize Aktualno raziskovalno področje IIF -- Inženiring algoritmov}
+\author{Sven Cerk\\27152037}
+
+
+\begin{document}
+\maketitle
+
+\section{Štetje inverzij}
+
+\subsection{} 
+
+\begin{definition}[Inverzija]
+Naj bo $a_1, a_2, \ldots, a_n$ zaporedje celih števil. \emph{Inverzija} je par indeksov $(i,j)$ ($i,j \in \{1,2,\ldots,n\}$) za katera velja $i < j$ in $a_i > a_j$.
+\end{definition}
+
+\begin{definition}[Število inverzij]
+\emph{Število inverzij} je moč množice vseh inverzij v zaporedju $(a_i)_{i = 1,\ldots,n}$
+\[
+\left| \{ (i,j) \mid \text{$(i,j)$ inverzija v zaporedju $(a_i)_{i = 1,\ldots,n}$} \} \right|
+\]
+\end{definition}
+
+Naloga je definirana kot
+\begin{lstlisting}[escapechar=~]
+~\normalfont\textbf{Vhod}: $(a_1, a_2, \ldots a_n)$ zaporedje celih števil~
+~\normalfont\textbf{Izhod}: Število inverzij v zaporedju $(a_1, a_2, \ldots a_n)$~
+\end{lstlisting}
+
+\subsection{}
+
+Najmanjše število inverzij je v zaporedju urejenem naraščajoče --- v tem primeru je število inverzij 0. Največje število inverzij je v zaporedju urejenem padajoče --- $(n-1) + (n-2) + (n-3) + \cdots + 2 + 1 + 0 = \frac{n (n-1)}{2} = \frac{n^2 - n}{2}$.
+
+\subsection{}
+
+Število različnih vhodov:
+\begin{enumerate}[label=\alph*)]
+\item $a_i \in \mathbb{Z}_{32b}$ : $2^{32n}$
+\item $a_i \in \mathbb{Z}_{32b}$, $a_i \neq a_j$ : $\frac{(2^{32})!}{(2^{32} - n)!}$
+\item $a_i \in \mathbb{Z}_{n}$ : $n^n$
+\item $a_i \in \mathbb{Z}_{n}$, $a_i \neq a_j$ : $n!$
+\end{enumerate}
+
+\subsection{}
+
+\begin{enumerate}[label=\alph*)]
+\item brez inverzij: $\frac{1}{n!}$
+\item na zadnjem mestu 0: $\frac{(n-1)!}{n!}$
+\item na prvem 0 in zadnjem $(n-1)$: $\frac{(n-2)!}{n!}$
+\end{enumerate}
+
+\subsection{}
+
+\begin{enumerate}[label=\alph*)]
+\item
+Glavna ideja za algoritem grobe sile je, da preverimo vse možne pare, če predstavljajo inverzijo ali ne ter štejemo inverzije.
+
+\item
+\begin{algorithmic}
+\State $count \gets 0$
+\For {$i \gets 1 \ldots (n-1)$}
+    \For {$j \gets (i+1) \ldots n$}
+        \If {$a_i > a_j$}
+            \State $count \gets count + 1$
+        \EndIf
+    \EndFor
+\EndFor
+\Return {$count$}
+\end{algorithmic}
+
+\item
+Časovna zahtevnost algoritma je
+\begin{align*}
+T(n) &\sim \sum_{i=0}^{n-2} \left( \sum_{j=i+1}^{n-1} 1 \right) \\
+     &\sim \sum_{i=0}^{n-2} \left( n - 1 - i \right) \\
+     &\sim \sum_{i=0}^{n-2} \left( n-1 \right) - \sum_{i=0}^{n-2} i \\
+     &\sim (n-1)^2 - \frac{(n-1) (n-2)}{2} \\
+     &\sim n^2 - \frac{n^2}{2} \\
+     &\sim \frac{\ n^2}{2}
+\end{align*}
+
+\end{enumerate}
+
+\subsection{}
+
+\end{document}
