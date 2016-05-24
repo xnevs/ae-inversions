@@ -9,12 +9,24 @@
 #include "utilities.hpp"
 #include "inversions.hpp"
 
+#define TEST(f, rep, a) {                                                          \
+    std::chrono::time_point<std::chrono::steady_clock> _TEST_start, _TEST_end;     \
+    _TEST_start = std::chrono::steady_clock::now();                                \
+    for(int _TEST_i=0; _TEST_i<rep; _TEST_i++) {                                   \
+        (f)((a));                                                                  \
+    }                                                                              \
+    _TEST_end = std::chrono::steady_clock::now();                                  \
+    std::chrono::duration<double> _TEST_elapsed_seconds = _TEST_end - _TEST_start; \
+    cout << #f"\t" << _TEST_elapsed_seconds.count() << " s" << endl;               \
+}
+
+
 using namespace std;
 
-using Algorithm = function<vector<int>::size_type(vector<int> const &)>;
+//using Algorithm = function<vector<int>::size_type(vector<int> const &)>;
 //using Algorithm = vector<int>::size_type (*)(vector<int>);
 
-Algorithm alg;
+Alg alg;
 int n;
 Seq seq;
 int rep;
@@ -29,17 +41,17 @@ bool parse_args(int argc, char *argv[]) {
     string rep_{argv[4]};
    
     if(alg_ == "bf") {
-        alg = inversions_bf;
+        alg = Alg::bf;
     } else if(alg_ == "is1") {
-        alg = inversions_is1;
+        alg = Alg::is1;
     } else if(alg_ == "is2") {
-        alg = inversions_is2;
+        alg = Alg::is2;
     } else if(alg_ == "ms1") {
-        alg = inversions_ms1;
+        alg = Alg::ms1;
     } else if(alg_ == "ms2") {
-        alg = inversions_ms2;
+        alg = Alg::ms2;
     } else if(alg_ == "ms3") {
-        alg = inversions_ms3;
+        alg = Alg::ms3;
     } else {
         return false;
     }
@@ -77,30 +89,31 @@ int main(int argc, char *argv[]) {
     }
 
     random_device rd;
-    //default_random_engine random{rd()};
+    default_random_engine random{rd()};
 
-    default_random_engine random;
-
-    auto seed = rd();
-
-    random.seed(seed);
     auto a = generate(n,seq,random);
-
-    random.seed(seed);
-    auto a_a = generate_a(n,seq,random);
 
     //cout << " bf: " << inversions_bf(a) << endl;
     //cout << "alg: " << alg(a) << endl;
 
-    std::chrono::time_point<std::chrono::steady_clock> start, end;
-    start = std::chrono::steady_clock::now();
-
-    for(int i=0; i<rep; i++) {
-        alg(a);
+    switch(alg) {
+    case Alg::bf:
+        TEST(inversions_bf , rep, a);
+        break;
+    case Alg::is1:
+        TEST(inversions_is1, rep, a);
+        break;
+    case Alg::is2:
+        TEST(inversions_is2, rep, a);
+        break;
+    case Alg::ms1:
+        TEST(inversions_ms1, rep, a);
+        break;
+    case Alg::ms2:
+        TEST(inversions_ms2, rep, a);
+        break;
+    case Alg::ms3:
+        TEST(inversions_ms3, rep, a);
+        break;
     }
-
-    end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    cout << "time: " << elapsed_seconds.count() << " s" << endl;
 }

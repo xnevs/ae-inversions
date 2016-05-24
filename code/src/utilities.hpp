@@ -4,7 +4,16 @@
 #include <ostream>
 #include <algorithm>
 
-enum class Seq{
+enum class Alg {
+    bf,
+    is1,
+    is2,
+    ms1,
+    ms2,
+    ms3
+};
+
+enum class Seq {
     inc,
     dec,
     rnd
