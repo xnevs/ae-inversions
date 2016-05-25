@@ -10,7 +10,13 @@ enum class Alg {
     is2,
     ms1,
     ms2,
-    ms3
+    ms3,
+    bf_idx,
+    is1_idx,
+    is2_idx,
+    ms1_idx,
+    ms2_idx,
+    ms3_idx
 };
 
 enum class Seq {
@@ -19,7 +25,7 @@ enum class Seq {
     rnd
 };
 
-inline std::ostream &operator<<(std::ostream &out, std::vector<int> const &v) {
+inline std::ostream &operator<<(std::ostream &out, std::vector<int> const & v) {
     out << "{";
     for(auto const i : v) {
         out << " " << i;
@@ -29,7 +35,7 @@ inline std::ostream &operator<<(std::ostream &out, std::vector<int> const &v) {
 }
 
 template <typename URNG>
-std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG&& gen) {
+std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
     std::vector<int> v(n);
 
     for(std::vector<int>::size_type i=0; i<n; i++)
@@ -52,7 +58,7 @@ std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG&& gen) {
 #include <memory>
 
 template <typename URNG>
-std::unique_ptr<int[]> generate_a(size_t n, Seq seq, URNG&& gen) {
+std::unique_ptr<int[]> generate_a(size_t n, Seq seq, URNG && gen) {
     auto v = std::make_unique<int[]>(n);
 
     for(size_t i=0; i<n; i++)

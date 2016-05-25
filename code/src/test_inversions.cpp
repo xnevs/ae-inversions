@@ -52,6 +52,18 @@ bool parse_args(int argc, char *argv[]) {
         alg = Alg::ms2;
     } else if(alg_ == "ms3") {
         alg = Alg::ms3;
+    } else if(alg_ == "bf_idx") {
+        alg = Alg::bf_idx;
+    } else if(alg_ == "is1_idx") {
+        alg = Alg::is1_idx;
+    } else if(alg_ == "is2_idx") {
+        alg = Alg::is2_idx;
+    } else if(alg_ == "ms1_idx") {
+        alg = Alg::ms1_idx;
+    } else if(alg_ == "ms2_idx") {
+        alg = Alg::ms2_idx;
+    } else if(alg_ == "ms3_idx") {
+        alg = Alg::ms3_idx;
     } else {
         return false;
     }
@@ -94,7 +106,7 @@ int main(int argc, char *argv[]) {
     auto a = generate(n,seq,random);
 
     //cout << " bf: " << inversions_bf(a) << endl;
-    //cout << "alg: " << alg(a) << endl;
+    //cout << "alg: " << inversions_is2(a) << endl;
 
     switch(alg) {
     case Alg::bf:
@@ -114,6 +126,24 @@ int main(int argc, char *argv[]) {
         break;
     case Alg::ms3:
         TEST(inversions_ms3, rep, a);
+        break;
+    case Alg::bf_idx:
+        TEST(inversions_bf_idx , rep, a);
+        break;
+    case Alg::is1_idx:
+        TEST(inversions_is1_idx, rep, a);
+        break;
+    case Alg::is2_idx:
+        TEST(inversions_is2_idx, rep, a);
+        break;
+    case Alg::ms1_idx:
+        TEST(inversions_ms1_idx, rep, a);
+        break;
+    case Alg::ms2_idx:
+        TEST(inversions_ms2_idx, rep, a);
+        break;
+    case Alg::ms3_idx:
+        TEST(inversions_ms3_idx, rep, a);
         break;
     }
 }

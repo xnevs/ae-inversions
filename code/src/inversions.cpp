@@ -11,12 +11,35 @@ using namespace std;
 
 using size_type = vector<int>::size_type;
 
-size_type inversions_bf(vector<int> const &a) {
+size_type inversions_bf_idx(vector<int> const & a) {
+    auto n = a.size();
+    size_type count = 0;
+    for(size_type i=0; i<n-1; i++)
+        for(size_type j=i+1; j<n; j++)
+            if(a[i] > a[j])
+                ++count;
+    return count;
+}
+
+size_type inversions_bf(vector<int> const & a) {
     size_type count = 0;
     for(auto i=begin(a); i!=prev(end(a)); ++i)
         for(auto j=next(i); j!=end(a); ++j)
             if(*i > *j)
                 ++count;
+    return count;
+}
+
+size_type inversions_is1_idx(vector<int> a) {
+    auto n = a.size();
+    size_type count = 0;
+    for(size_type i=1; i<n; ++i) {
+        size_type j;
+        for(j=i; j>0 && a[j-1]>a[j]; --j) {
+            swap(a[j-1],a[j]);
+        }
+        count += i-j;
+    }
     return count;
 }
 
@@ -28,7 +51,21 @@ size_type inversions_is1(vector<int> a) {
             swap(*prev(j), *j);
         count += distance(j, i);
     }
+    return count;
+}
 
+size_type inversions_is2_idx(vector<int> a) {
+    auto n = a.size();
+    size_type count = 0;
+    for(size_type i=1; i<n; ++i) {
+        auto x = a[i];
+        size_type j;
+        for(j=i; j>0 && a[j-1]>x; --j) {
+            a[j] = a[j-1];
+        }
+        a[j] = x;
+        count += i-j;
+    }
     return count;
 }
 
@@ -40,6 +77,35 @@ size_type inversions_is2(vector<int> a) {
         count += distance(j, i);
     }
     return count;
+}
+
+size_type ms1_helper_idx(vector<int> &a, size_type first, size_type last) {
+    auto n = last-first;
+    if(n < 2)
+        return 0;
+
+    auto mid = (first + last) / 2;
+
+    auto count1 = ms1_helper_idx(a,first,mid);
+    auto count2 = ms1_helper_idx(a,mid,last);
+
+    size_type count = 0;
+    vector<int> b(n);
+    auto k0=first, k1=mid;
+    for(size_type k=0; k<n; k++) {
+        if(k0 < mid && (k1 >= last || a[k0] <= a[k1])) {
+            b[k] = a[k0++];
+        } else {
+            b[k] = a[k1++];
+            count += mid-k0;
+        }
+    }
+    move(b.begin(), b.end(), a.begin()+first);
+
+    return count + count1 + count2;
+}
+size_type inversions_ms1_idx(vector<int> a) {
+    return ms1_helper_idx(a,0,a.size());
 }
 
 size_type ms1_helper(vector<int>::iterator first, vector<int>::iterator last) {
@@ -70,6 +136,34 @@ size_type inversions_ms1(vector<int> a) {
     return ms1_helper(begin(a), end(a));
 }
 
+size_type ms2_helper_idx(vector<int> & a, size_type first, size_type last, vector<int> & b) {
+    if(last - first < 2)
+        return 0;
+
+    auto mid = (first + last) / 2;
+
+    auto count1 = ms2_helper_idx(a,first,mid,b);
+    auto count2 = ms2_helper_idx(a,mid,last,b);
+
+    size_type count = 0;
+    auto k0=first, k1=mid;
+    for(auto k=first; k<last; k++) {
+        if(k0 < mid && (k1 >= last || a[k0] <= a[k1])) {
+            b[k] = a[k0++];
+        } else {
+            b[k] = a[k1++];
+            count += mid-k0;
+        }
+    }
+    move(b.begin()+first, b.begin()+last, a.begin()+first);
+
+    return count + count1 + count2;
+}
+size_type inversions_ms2_idx(vector<int> a) {
+    auto n = a.size();
+    vector<int> b(n);
+    return ms2_helper_idx(a,0,n,b);
+}
 size_type ms2_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
     auto n = distance(first, last);
     if(n < 2)
@@ -102,9 +196,8 @@ size_type inversions_ms2(vector<int> a) {
     return ms2_helper(begin(a), end(a), begin(b));
 }
 
-size_type inversions_ms3(vector<int> a) {
+size_type inversions_ms3_idx(vector<int> a) {
     auto n = a.size();
-
     size_type count = 0;
     vector<int> b(n);
     for(size_type width = 1; width < n; width *= 2) {
@@ -123,13 +216,11 @@ size_type inversions_ms3(vector<int> a) {
         }
         move(begin(b), end(b), begin(a));
     }
-
     return count;
 }
-/*
+
 size_type inversions_ms3(vector<int> a) {
     auto n = a.size();
-
     size_type count = 0;
     vector<int> b(n);
     for(size_type width = 1; width < n; width *= 2) {
@@ -153,10 +244,8 @@ size_type inversions_ms3(vector<int> a) {
         }
         move(begin(b), end(b), begin(a));
     }
-
     return count;
 }
-*/
 
 size_t inversions_ms3_a(int a[], size_t n) {
     size_t count = 0;
@@ -175,9 +264,8 @@ size_t inversions_ms3_a(int a[], size_t n) {
                 }
             }
         }
-        copy(b, b+n, a);
+        move(b, b+n, a);
     }
     delete[] b;
-
     return count;
 }
