@@ -103,7 +103,7 @@ size_type ms1_helper_idx(vector<int> &a, size_type first, size_type last) {
     return count + count1 + count2;
 }
 size_type inversions_ms1_idx(vector<int> a) {
-    return ms1_helper_idx(a,0,a.size());
+    return ms1_helper_idx(a, 0, a.size());
 }
 
 size_type ms1_helper(vector<int>::iterator first, vector<int>::iterator last) {
@@ -160,7 +160,7 @@ size_type ms2_helper_idx(vector<int> & a, size_type first, size_type last, vecto
 size_type inversions_ms2_idx(vector<int> a) {
     auto n = a.size();
     vector<int> b(n);
-    return ms2_helper_idx(a,0,n,b);
+    return ms2_helper_idx(a, 0, n, b);
 }
 size_type ms2_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
     auto n = distance(first, last);
