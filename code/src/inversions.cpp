@@ -200,11 +200,11 @@ size_type inversions_ms3_idx(vector<int> a) {
     size_type count = 0;
     vector<int> b(n);
     for(size_type width = 1; width < n; width *= 2) {
-        size_type first, last;
-        for(first=0, last=min(2*width, n); first<n; first=last, last=min(last+2*width, n)) {
+        for(size_type first=0; first<n; first+=2*width) {
             auto mid = min(first+width, n);
-            size_type k0=first, k1=mid;
-            for(auto k=first; k<last; ++k) {
+            auto last = min(mid+width, n);
+            auto k0=first, k1=mid;
+            for(size_type k=first; k<last; ++k) {
                 if(k1 != last && (k0 == mid || a[k1] < a[k0])) {
                     b[k] = a[k1++];
                     count += mid - k0;
@@ -246,7 +246,7 @@ size_type inversions_ms3(vector<int> a) {
     return count;
 }
 
-#define MS2_CUTOFF 13
+#define MS2_CUTOFF 17 
 size_type ms2_is2_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
     auto n = distance(first, last);
     size_type count = 0;
@@ -287,7 +287,7 @@ size_type inversions_ms2_is2(vector<int> a) {
     return ms2_is2_helper(begin(a), end(a), begin(b));
 }
 
-#define MS3_CUTOFF 13
+#define MS3_CUTOFF 17
 size_type inversions_ms3_is2(vector<int> a) {
     auto n = a.size();
     size_type count = 0;

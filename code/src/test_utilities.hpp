@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <type_traits>
+#include <chrono>
+#include <iostream>
 #include <ostream>
 
 enum class Alg {
@@ -48,12 +50,12 @@ std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
         v[i] = i;
 
     switch(seq) {
-    case Seq::inc:
+      case Seq::inc:
         break;
-    case Seq::dec:
+      case Seq::dec:
         std::reverse(v.begin(),v.end());
         break;
-    case Seq::rnd:
+      case Seq::rnd:
         std::shuffle(v.begin(),v.end(),gen);
         break;
     }

@@ -6,7 +6,6 @@
 #include <map>
 #include <bitset>
 #include <random>
-#include <chrono>
 #include <vector>
 
 #include "test_utilities.hpp"
