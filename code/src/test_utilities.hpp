@@ -2,6 +2,7 @@
 #define UTILITIES_HPP
 
 #include <algorithm>
+#include <utility>
 #include <type_traits>
 #include <chrono>
 #include <iostream>
@@ -63,12 +64,23 @@ std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
     return v;
 }
 
+struct Comp {
+    bool operator()(int const & a, int const & b) {
+        return a < b;
+    }
+};
+struct Swap {
+    void operator()(int & a, int & b) {
+        std::swap(a,b);
+    }
+};
+
 #define TEST(f, test_cases) {                                                  \
-    decltype((f)((test_cases).front())) _TEST_count = 0;                       \
+    decltype((f<Comp, Swap>)((test_cases).front())) _TEST_count = 0;                       \
     std::chrono::time_point<std::chrono::steady_clock> _TEST_start, _TEST_end; \
     _TEST_start = std::chrono::steady_clock::now();                            \
     for(auto const & _TEST_a : test_cases) {                                   \
-        _TEST_count += (f)((_TEST_a));                                         \
+        _TEST_count += (f<Comp,Swap>)((_TEST_a));                              \
     }                                                                          \
     _TEST_end = std::chrono::steady_clock::now();                              \
     std::chrono::duration<double> _TEST_elapsed = _TEST_end - _TEST_start;     \

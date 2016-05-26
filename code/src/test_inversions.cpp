@@ -7,6 +7,7 @@
 #include <bitset>
 #include <random>
 #include <vector>
+#include <functional>
 
 #include "test_utilities.hpp"
 #include "inversions.hpp"
