@@ -1,95 +1,56 @@
 #include <iostream>
+#include <iomanip>
 
 #include <string>
-#include <vector>
-#include <functional>
+#include <sstream>
+#include <map>
+#include <bitset>
 #include <random>
 #include <chrono>
+#include <vector>
 
-#include "utilities.hpp"
+#include "test_utilities.hpp"
 #include "inversions.hpp"
-
-#define TEST(f, rep, a) {                                                          \
-    std::chrono::time_point<std::chrono::steady_clock> _TEST_start, _TEST_end;     \
-    _TEST_start = std::chrono::steady_clock::now();                                \
-    for(int _TEST_i=0; _TEST_i<rep; _TEST_i++) {                                   \
-        (f)((a));                                                                  \
-    }                                                                              \
-    _TEST_end = std::chrono::steady_clock::now();                                  \
-    std::chrono::duration<double> _TEST_elapsed_seconds = _TEST_end - _TEST_start; \
-    cout << #f"\t" << _TEST_elapsed_seconds.count() << " s" << endl;               \
-}
-
 
 using namespace std;
 
-//using Algorithm = function<vector<int>::size_type(vector<int> const &)>;
-//using Algorithm = vector<int>::size_type (*)(vector<int>);
-
-Alg alg;
+AlgFlags alg_flags;
 int n;
 Seq seq;
 int rep;
 
+map<string, Alg> algs = {{"bf", Alg::bf},
+                         {"is1", Alg::is1},
+                         {"is2", Alg::is2},
+                         {"ms1", Alg::ms1},
+                         {"ms2", Alg::ms2},
+                         {"ms3", Alg::ms3},
+                         {"ms2_is2", Alg::ms2_is2},
+                         {"ms3_is2", Alg::ms3_is2},
+                         {"bf_idx", Alg::bf_idx},
+                         {"is1_idx", Alg::is1_idx},
+                         {"is2_idx", Alg::is2_idx},
+                         {"ms1_idx", Alg::ms1_idx},
+                         {"ms2_idx", Alg::ms2_idx},
+                         {"ms3_idx", Alg::ms3_idx}};
+map<string, Seq> seqs = {{"inc", Seq::inc},
+                         {"dec", Seq::dec},
+                         {"rnd", Seq::rnd}};
 bool parse_args(int argc, char *argv[]) {
     if(argc != 5)
         return false;
-
-    string alg_{argv[1]};
-    string n_{argv[2]};
-    string seq_{argv[3]};
-    string rep_{argv[4]};
-   
-    if(alg_ == "bf") {
-        alg = Alg::bf;
-    } else if(alg_ == "is1") {
-        alg = Alg::is1;
-    } else if(alg_ == "is2") {
-        alg = Alg::is2;
-    } else if(alg_ == "ms1") {
-        alg = Alg::ms1;
-    } else if(alg_ == "ms2") {
-        alg = Alg::ms2;
-    } else if(alg_ == "ms3") {
-        alg = Alg::ms3;
-    } else if(alg_ == "bf_idx") {
-        alg = Alg::bf_idx;
-    } else if(alg_ == "is1_idx") {
-        alg = Alg::is1_idx;
-    } else if(alg_ == "is2_idx") {
-        alg = Alg::is2_idx;
-    } else if(alg_ == "ms1_idx") {
-        alg = Alg::ms1_idx;
-    } else if(alg_ == "ms2_idx") {
-        alg = Alg::ms2_idx;
-    } else if(alg_ == "ms3_idx") {
-        alg = Alg::ms3_idx;
-    } else {
-        return false;
-    }
-
     try {
-        n = stoi(n_);
+        istringstream algs_{argv[1]};
+        string alg_;
+        while(getline(algs_, alg_, ',')) {
+            alg_flags.set(algs.at(alg_));
+        }
+        n = stoi(argv[2]);
+        seq = seqs.at(argv[3]); 
+        rep = stoi(argv[4]);
     } catch(...) {
         return false;
     }
-
-    if(seq_ == "inc") {
-        seq = Seq::inc;
-    } else if(seq_ == "dec") {
-        seq = Seq::dec;
-    } else if(seq_ == "rnd") {
-        seq = Seq::rnd;
-    } else {
-        return false;
-    }
-
-    try {
-        rep = stoi(rep_);
-    } catch(...) {
-        return false;
-    }
-
     return true;
 }
 
@@ -101,49 +62,27 @@ int main(int argc, char *argv[]) {
     }
 
     random_device rd;
-    default_random_engine random{rd()};
+    auto seed = rd();
+    default_random_engine random{seed};
 
-    auto a = generate(n,seq,random);
-
-    //cout << " bf: " << inversions_bf(a) << endl;
-    //cout << "alg: " << inversions_is2(a) << endl;
-
-    switch(alg) {
-    case Alg::bf:
-        TEST(inversions_bf , rep, a);
-        break;
-    case Alg::is1:
-        TEST(inversions_is1, rep, a);
-        break;
-    case Alg::is2:
-        TEST(inversions_is2, rep, a);
-        break;
-    case Alg::ms1:
-        TEST(inversions_ms1, rep, a);
-        break;
-    case Alg::ms2:
-        TEST(inversions_ms2, rep, a);
-        break;
-    case Alg::ms3:
-        TEST(inversions_ms3, rep, a);
-        break;
-    case Alg::bf_idx:
-        TEST(inversions_bf_idx , rep, a);
-        break;
-    case Alg::is1_idx:
-        TEST(inversions_is1_idx, rep, a);
-        break;
-    case Alg::is2_idx:
-        TEST(inversions_is2_idx, rep, a);
-        break;
-    case Alg::ms1_idx:
-        TEST(inversions_ms1_idx, rep, a);
-        break;
-    case Alg::ms2_idx:
-        TEST(inversions_ms2_idx, rep, a);
-        break;
-    case Alg::ms3_idx:
-        TEST(inversions_ms3_idx, rep, a);
-        break;
+    vector<decltype(generate(n, seq, random))> test_cases;
+    test_cases.reserve(rep);
+    for(int i=0; i<rep; ++i) {
+        test_cases.push_back(generate(n, seq, random));
     }
+
+    if(alg_flags[Alg::bf])      TEST(inversions_bf     , test_cases);
+    if(alg_flags[Alg::is1])     TEST(inversions_is1    , test_cases);
+    if(alg_flags[Alg::is2])     TEST(inversions_is2    , test_cases);
+    if(alg_flags[Alg::ms1])     TEST(inversions_ms1    , test_cases);
+    if(alg_flags[Alg::ms2])     TEST(inversions_ms2    , test_cases);
+    if(alg_flags[Alg::ms3])     TEST(inversions_ms3    , test_cases);
+    if(alg_flags[Alg::ms2_is2]) TEST(inversions_ms2_is2, test_cases);
+    if(alg_flags[Alg::ms3_is2]) TEST(inversions_ms3_is2, test_cases);
+    if(alg_flags[Alg::bf_idx])  TEST(inversions_bf_idx , test_cases);
+    if(alg_flags[Alg::is1_idx]) TEST(inversions_is1_idx, test_cases);
+    if(alg_flags[Alg::is2_idx]) TEST(inversions_is2_idx, test_cases);
+    if(alg_flags[Alg::ms1_idx]) TEST(inversions_ms1_idx, test_cases);
+    if(alg_flags[Alg::ms2_idx]) TEST(inversions_ms2_idx, test_cases);
+    if(alg_flags[Alg::ms3_idx]) TEST(inversions_ms3_idx, test_cases);
 }
