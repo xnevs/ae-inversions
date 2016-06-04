@@ -42,21 +42,21 @@ def plot(name, seq, algs, ns):
     
     fig = prepare(name, min(ns),max(ns), min(df['time_one']), max(df['time_one']))
     for alg in algs:
-        plt.plot(ns, df.loc[seq,alg]['time_one'], label=alg)
+        plt.plot(ns, df.loc[seq,alg]['time_one'], ('' if alg in fast_algs+fast_idx_algs else '--'), label=alg)
     plt.legend(loc='best', shadow=True)
     plt.tight_layout(rect=(0,0,1,.95))
     #plt.show()
     fig.savefig(name+'.pdf', dpi=96) # png, eps, pdf
     plt.close('all')
 
-slow_algs     = ['bf','is1','is2']
+slow_algs     = ['bf','is1','is2','is2a']
 slow_idx_algs = ['bf_idx','is1_idx','is2_idx']
-fast_algs     = ['ms1','ms2','ms2_is2','ms3','ms3_is2']
+fast_algs     = ['ms1','ms2','ms2_is2','ms2_is2a','ms3','ms3_is2']
 fast_idx_algs = ['ms1_idx','ms2_idx','ms3_idx']
 
 all_algs = slow_algs + fast_algs
 
-tiny_ns = list(range(10, 101, 10))
+tiny_ns = list(range(10, 201, 10))
 small_ns = list(range(1000, 9001, 1000))
 med_ns=list(range(10000, 90001, 10000))
 large_ns = list(range(100000, 900001, 100000)) + list(range(1000000, 10000001, 1000000))

@@ -26,6 +26,7 @@ map<string, Alg> algs = {{"bf", Alg::bf},
                          {"ms2", Alg::ms2},
                          {"ms3", Alg::ms3},
                          {"ms2_is2", Alg::ms2_is2},
+                         {"ms2_is2a", Alg::ms2_is2a},
                          {"ms3_is2", Alg::ms3_is2},
                          {"bf_idx", Alg::bf_idx},
                          {"is1_idx", Alg::is1_idx},
@@ -71,19 +72,20 @@ int main(int argc, char *argv[]) {
         test_cases.push_back(generate(n, seq, random));
     }
 
-    if(alg_flags[Alg::bf])      TEST(inversions_bf     , test_cases);
-    if(alg_flags[Alg::is1])     TEST(inversions_is1    , test_cases);
-    if(alg_flags[Alg::is2])     TEST(inversions_is2    , test_cases);
-    if(alg_flags[Alg::is2a])    TEST(inversions_is2a   , test_cases);
-    if(alg_flags[Alg::ms1])     TEST(inversions_ms1    , test_cases);
-    if(alg_flags[Alg::ms2])     TEST(inversions_ms2    , test_cases);
-    if(alg_flags[Alg::ms3])     TEST(inversions_ms3    , test_cases);
-    if(alg_flags[Alg::ms2_is2]) TEST(inversions_ms2_is2, test_cases);
-    if(alg_flags[Alg::ms3_is2]) TEST(inversions_ms3_is2, test_cases);
-    if(alg_flags[Alg::bf_idx])  TEST(inversions_bf_idx , test_cases);
-    if(alg_flags[Alg::is1_idx]) TEST(inversions_is1_idx, test_cases);
-    if(alg_flags[Alg::is2_idx]) TEST(inversions_is2_idx, test_cases);
-    if(alg_flags[Alg::ms1_idx]) TEST(inversions_ms1_idx, test_cases);
-    if(alg_flags[Alg::ms2_idx]) TEST(inversions_ms2_idx, test_cases);
-    if(alg_flags[Alg::ms3_idx]) TEST(inversions_ms3_idx, test_cases);
+    if(alg_flags[Alg::bf])       TEST(inversions_bf      , test_cases);
+    if(alg_flags[Alg::is1])      TEST(inversions_is1     , test_cases);
+    if(alg_flags[Alg::is2])      TEST(inversions_is2     , test_cases);
+    if(alg_flags[Alg::is2a])     TEST(inversions_is2a    , test_cases);
+    if(alg_flags[Alg::ms1])      TEST(inversions_ms1     , test_cases);
+    if(alg_flags[Alg::ms2])      TEST(inversions_ms2     , test_cases);
+    if(alg_flags[Alg::ms3])      TEST(inversions_ms3     , test_cases);
+    if(alg_flags[Alg::ms2_is2])  TEST(inversions_ms2_is2 , test_cases);
+    if(alg_flags[Alg::ms2_is2a]) TEST(inversions_ms2_is2a, test_cases);
+    if(alg_flags[Alg::ms3_is2])  TEST(inversions_ms3_is2 , test_cases);
+    if(alg_flags[Alg::bf_idx])   TEST(inversions_bf_idx  , test_cases);
+    if(alg_flags[Alg::is1_idx])  TEST(inversions_is1_idx , test_cases);
+    if(alg_flags[Alg::is2_idx])  TEST(inversions_is2_idx , test_cases);
+    if(alg_flags[Alg::ms1_idx])  TEST(inversions_ms1_idx , test_cases);
+    if(alg_flags[Alg::ms2_idx])  TEST(inversions_ms2_idx , test_cases);
+    if(alg_flags[Alg::ms3_idx])  TEST(inversions_ms3_idx , test_cases);
 }

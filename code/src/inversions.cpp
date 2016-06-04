@@ -76,14 +76,14 @@ size_type inversions_is2(vector<int> a) {
     }
     return count;
 }
+
 size_type inversions_is2a(vector<int> a) {
     size_type count = 0;
     for(auto i=next(begin(a)); i!=end(a); ++i) {
         auto x = *i;
         decltype(i) j;
-        for(j=i; j!=begin(a) && *j<*prev(j); --j) {
+        for(j=i; j!=begin(a) && x<*prev(j); --j)
             *j = *prev(j);
-        }
         *j = x;
         count += distance(j, i);
     }
@@ -258,47 +258,7 @@ size_type inversions_ms3(vector<int> a) {
     return count;
 }
 
-#define MS2_IS1_CUTOFF 17 
-size_type ms2_is1_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
-    auto n = distance(first, last);
-    size_type count = 0;
-
-    if(n < MS2_IS1_CUTOFF) {
-        for(auto i=next(first); i!=last; ++i) {
-            auto j = upper_bound(first, i, *i);
-            rotate(j, i, next(i));
-            count += distance(j, i);
-        }
-        return count;
-    }
-
-    auto mid = first + n / 2;
-    auto bmid = bfirst + n / 2;
-    auto blast = bfirst + n;
-
-    auto count1 = ms2_is1_helper(first, mid, bfirst);
-    auto count2 = ms2_is1_helper(mid, last, bmid);
-
-    auto k0=first, k1=mid;
-    for(auto k=bfirst; k!=blast; ++k) {
-        if(k1 != last && (k0 == mid || *k1 < *k0)) {
-            *k = *(k1++);
-            count += distance(k0, mid);
-        } else {
-            *k = *(k0++);
-        }
-
-    }
-    move(bfirst, blast, first);
-
-    return count + count1 + count2;
-}
-size_type inversions_ms2_is1(vector<int> a) {
-    vector<int> b(a.size());
-    return ms2_is1_helper(begin(a), end(a), begin(b));
-}
-
-#define MS2_IS2_CUTOFF 17 
+#define MS2_IS2_CUTOFF 17
 size_type ms2_is2_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
     auto n = distance(first, last);
     size_type count = 0;
@@ -336,6 +296,49 @@ size_type ms2_is2_helper(vector<int>::iterator first, vector<int>::iterator last
 size_type inversions_ms2_is2(vector<int> a) {
     vector<int> b(a.size());
     return ms2_is2_helper(begin(a), end(a), begin(b));
+}
+
+#define MS2_IS2a_CUTOFF 42 
+size_type ms2_is2a_helper(vector<int>::iterator first, vector<int>::iterator last, vector<int>::iterator bfirst) {
+    auto n = distance(first, last);
+    size_type count = 0;
+
+    if(n < MS2_IS2a_CUTOFF) {
+        for(auto i=next(first); i!=last; ++i) {
+            auto x = *i;
+            decltype(i) j;
+            for(j=i; j!=first && x<*prev(j); --j)
+                *j = *prev(j);
+            *j = x;
+            count += distance(j, i);
+        }
+        return count;
+    }
+
+    auto mid = first + n / 2;
+    auto bmid = bfirst + n / 2;
+    auto blast = bfirst + n;
+
+    auto count1 = ms2_is2a_helper(first, mid, bfirst);
+    auto count2 = ms2_is2a_helper(mid, last, bmid);
+
+    auto k0=first, k1=mid;
+    for(auto k=bfirst; k!=blast; ++k) {
+        if(k1 != last && (k0 == mid || *k1 < *k0)) {
+            *k = *(k1++);
+            count += distance(k0, mid);
+        } else {
+            *k = *(k0++);
+        }
+
+    }
+    move(bfirst, blast, first);
+
+    return count + count1 + count2;
+}
+size_type inversions_ms2_is2a(vector<int> a) {
+    vector<int> b(a.size());
+    return ms2_is2a_helper(begin(a), end(a), begin(b));
 }
 
 #define MS3_IS2_CUTOFF 17

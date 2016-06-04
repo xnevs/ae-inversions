@@ -16,6 +16,7 @@ enum class Alg {
     ms2,
     ms3,
     ms2_is2,
+    ms2_is2a,
     ms3_is2,
     bf_idx,
     is1_idx,
