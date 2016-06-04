@@ -21,6 +21,7 @@ int rep;
 map<string, Alg> algs = {{"bf", Alg::bf},
                          {"is1", Alg::is1},
                          {"is2", Alg::is2},
+                         {"is2a", Alg::is2a},
                          {"ms1", Alg::ms1},
                          {"ms2", Alg::ms2},
                          {"ms3", Alg::ms3},
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]) {
     if(alg_flags[Alg::bf])      TEST(inversions_bf     , test_cases);
     if(alg_flags[Alg::is1])     TEST(inversions_is1    , test_cases);
     if(alg_flags[Alg::is2])     TEST(inversions_is2    , test_cases);
+    if(alg_flags[Alg::is2a])    TEST(inversions_is2a   , test_cases);
     if(alg_flags[Alg::ms1])     TEST(inversions_ms1    , test_cases);
     if(alg_flags[Alg::ms2])     TEST(inversions_ms2    , test_cases);
     if(alg_flags[Alg::ms3])     TEST(inversions_ms3    , test_cases);

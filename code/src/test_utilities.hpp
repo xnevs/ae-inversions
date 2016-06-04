@@ -11,6 +11,7 @@ enum class Alg {
     bf,
     is1,
     is2,
+    is2a,
     ms1,
     ms2,
     ms3,
@@ -42,6 +43,21 @@ enum class Seq {
     rnd
 };
 
+inline std::ostream & operator<<(std::ostream & out, Seq seq) {
+    switch(seq) {
+      case Seq::inc:
+        out << "inc";
+        break;
+      case Seq::dec:
+        out << "dec";
+        break;
+      case Seq::rnd:
+        out << "rnd";
+        break;
+    }
+    return out;
+}
+
 template <typename URNG>
 std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
     std::vector<int> v(n);
@@ -71,13 +87,14 @@ std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
         _TEST_count += (f)((_TEST_a));                                         \
     }                                                                          \
     _TEST_end = std::chrono::steady_clock::now();                              \
-    std::chrono::duration<double> _TEST_elapsed = _TEST_end - _TEST_start;     \
-    cout << #f << "\t" << _TEST_count << "\t"                                  \
-         << _TEST_elapsed.count() << "\t"                                      \
-         << _TEST_elapsed.count()/rep << endl;                                 \
+    auto _TEST_elapsed = std::chrono::duration_cast<std::chrono::milliseconds> \
+                                                   (_TEST_end - _TEST_start);  \
+    cout << #f+11 << "," << n << "," << seq << "," << rep << ","               \
+         << _TEST_count << "," << _TEST_elapsed.count() << endl;               \
 }
+    //std::chrono::duration<double> _TEST_elapsed = _TEST_end - _TEST_start; 
 
-inline std::ostream &operator<<(std::ostream &out, std::vector<int> const & v) {
+inline std::ostream & operator<<(std::ostream & out, std::vector<int> const & v) {
     out << "{";
     for(auto const i : v) {
         out << " " << i;
