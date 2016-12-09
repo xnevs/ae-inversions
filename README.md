@@ -19,7 +19,7 @@ Several algorithms (and their variations) are implemented and benchmarked:
   * Hybrid algorithms
 
 ## Building and Running
-  Run `make` in the `code` directory.
+  Run `make` in the `inversions` directory.
   The result of building is the `inversions` executable, that benchmarks different algorithms.
   
   Example of running can be found in the `run_tests.sh` script.
