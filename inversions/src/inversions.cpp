@@ -95,7 +95,7 @@ size_type ms1_helper_idx(vector<int> &a, size_type first, size_type last) {
     if(n < 2)
         return 0;
 
-    auto mid = (first + last) / 2;
+    auto mid = first + n / 2;
 
     auto count1 = ms1_helper_idx(a,first,mid);
     auto count2 = ms1_helper_idx(a,mid,last);

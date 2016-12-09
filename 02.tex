@@ -16,6 +16,7 @@
 
 \DeclareMathOperator{\Ex}{E}
 \DeclareMathOperator{\Pro}{P}
+\DeclareMathOperator{\Div}{div}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
@@ -97,7 +98,7 @@ Najmanjše število inverzij je v zaporedju urejenem naraščajoče --- v tem pr
 \item na prvem 0 in zadnjem $(n-1)$: $\frac{(n-2)!}{n!}$
 \end{enumerate}
 
-\subsection{}
+\subsection{Naivni algoritem}
 
 \begin{enumerate}[label=\alph*)]
 \item
@@ -129,6 +130,311 @@ T(n) &\sim \sum_{i=0}^{n-2} \left( \sum_{j=i+1}^{n-1} 1 \right) \\
 
 \end{enumerate}
 
-\subsection{}
+\subsection{Urejanje z vstavljanjem}
+
+\begin{enumerate}[label=\alph*)]
+\item
+Glavna ideja izboljšave je, da ne štejemo vsake inverzije posebej. Če so elementi pred trenutno opazovanim elementom urejeni po velikosti, nam ni potrebno pregledati vseh, temveč moramo le prešteti večje.
+
+\item
+\begin{algorithmic}
+\State $count \gets 0$
+\For {$i \gets 2 \ldots n$}
+    \State $j \gets i$
+    \While {$j > 1 \wedge a_j < a_{j-1}$}
+        \State $a_{j-1}, a_j \gets a_j, a_{j-1}$
+    \EndWhile
+    \State $count \gets count + i - j$
+\EndFor
+\Return {$count$}
+\end{algorithmic}
+
+\item
+Časovna zahtevnost algoritma je še vedno $\sim \frac{n^2}{2}$
+
+\end{enumerate}
+
+\subsection{Urejanje z zlivanjem}
+
+\begin{enumerate}[label=\alph*)]
+\item
+Glavna ideja izboljšave je da lahko ob zlivanju učinkovito ugotovimo, koliko inverzij je element tvoril z elementi iz druge particije (na vsakem nivoju rekurzije).
+
+\item
+\begin{algorithmic}
+\Function{Merge}{$(a_i)_n$, $first$, $last$, $(b_i)_n$}
+    \State $n \gets last - first$
+    \If {$n < 2$}
+        \Return {$0$}
+    \EndIf
+    \State $mid \gets first + (n \Div 2)$
+    \State $c_1 \gets \Call{Merge}{(a_i)_n, first, mid}$
+    \State $c_2 \gets \Call{Merge}{(a_i)_n, mid, last}$
+    \State $k_0 \gets first$
+    \State $k_1 \gets mid$
+    \For{$k \gets 1 \ldots n$}
+        \If {$k_1 \neq last \wedge (k_0 = mid \vee a_{k_1} < a_{k_0})$}
+            \State $b_k \gets a_{k_1}$
+            \State $k_1 \gets k_1 + 1$
+            \State $count \gets count + mid - k_0$
+        \Else
+            \State $b_k \gets a_{k_0}$
+            \State $k_0 \gets k_0 + 1$
+        \EndIf
+    \EndFor
+    \State $(a_i)_n \gets (b_i)_n$
+\EndFunction
+\end{algorithmic}
+
+\item
+Časovna zahtevnost je $\Theta(n \log n)$.
+
+\end{enumerate}
+
+\section{Implementacija in optimizacija}
+
+Algoritme sem implementiral v programskem jeziku \emph{C++}. Vsi algoritmi kot edini vhodni parameter prejmejo zaporedje shranjeno kot \lstinline!std::vector<int>!, vrnejo pa število inverzij v podanem zaporedju.
+
+Vsi algoritmi so implementirani v datoteki \lstinline!src/inversions.cpp!.
+
+\subsection{Naivni algoritem - \lstinline!bf! in \lstinline!bf_idx!}
+
+Naivni algoritem za štetje inverzij je edini algoritem, ki ne spreminja vhodnega zaporedja, zato tega ni potrebno kopirati. Podpis funkcije z naivnim algoritmom je
+\begin{lstlisting}
+std::vector<int>::size_type
+inversions_bf(std::vector<int> const & a);
+\end{lstlisting}
+
+Ta algoritem sem implementiral na dva načina. Pri prvem (\lstinline!bf!) sem za naslavljanje elementov zaporedja uporabil iteratorje, pri drugem (\lstinline!bf_idx!) pa indekse. Na ta dva načina sem implementiral tudi ostale algoritme. Spodaj sta prikazani obe verziji.
+\begin{lstlisting}
+size_type inversions_bf(vector<int> const & a) {
+    size_type count = 0;
+    for(auto i=begin(a); i!=prev(end(a)); ++i)
+        for(auto j=next(i); j!=end(a); ++j)
+            if(*j < *i)
+                ++count;
+    return count;
+}
+size_type inversions_bf_idx(vector<int> const & a) {
+    auto n = a.size();
+    size_type count = 0;
+    for(size_type i=0; i<n-1; i++)
+        for(size_type j=i+1; j<n; j++)
+            if(a[j] < a[i])
+                ++count;
+    return count;
+}
+\end{lstlisting}
+
+\subsection{Urejanje z vstavljanjem}
+
+Implementiral sem algoritme
+\begin{itemize}
+\item
+\lstinline!is1! -- vstavljanje v urejeni del preko menjave elementov,
+\item
+\lstinline!is2a! -- vstavljanje v urejeni del preko zamikanja elementov,
+\item
+\lstinline!is2! -- vstavljanje v urejeni del z enim zamikom (\lstinline!std::rotate!) .
+\end{itemize}
+Za vse naštete sem implementiral tudi različico z naslavljanjem z indeksi (\lstinline!_idx!).
+
+Razlika med algoritmoma \lstinline!is2a! in \lstinline!is2! je v tem, da pri \lstinline!is2a! zamikanje izvedem s \lstinline!for! zanko, pri \lstinline!is2! pa zamik vseh elementov dosežem s funkcijo \lstinline!std::rotate! (iz zaglavne datoteke \lstinline!<algorithm>!).
+
+Spodaj je zapisana izvorna koda za algoritem \lstinline!is2!. Pred vsakim zamikom najprej z bisekcijo (\lstinline!std::upper_bound!) poiščemo mesto, kamor je potrebno vstaviti naslednji element, in nato izvedemo zamik (\lstinline!std::rotate!).
+\begin{lstlisting}
+size_type inversions_is2(vector<int> a) {
+    size_type count = 0;
+    for(auto i=next(begin(a)); i!=end(a); ++i) {
+        auto j = upper_bound(begin(a), i, *i);
+        rotate(j, i, next(i));
+        count += distance(j, i);
+    }
+    return count;
+}
+\end{lstlisting}
+
+Predvidevam, da bo najhitrejša različica \lstinline!is2!, saj se pri njej izognemo odvečnim kopiranjem, ki jih opravlja \lstinline!is1!, in mogoče izkoristimo boljšo implementacijo \lstinline!std::rotate!, ki elemente \lstinline!vector!-ja mogoče zamika bolj učinkovito kot različica \lstinline!is2a!.
+
+\subsection{Urejanje z zlivanjem}
+
+Implementiral sem algoritme
+\begin{itemize}
+\item
+\lstinline!ms1! -- klasični rekurzivni pristop urejanja z zlivanjem, kjer zlivanje poteka v novo (vsakič se rezervira nov prostor) tabelo, ki se nato prekopira nazaj v originalno polje,
+\item
+\lstinline!ms2! -- predrezervacija dodatne tabele velikosti $n$, ki se uporablja za zlivanje,
+\item
+\lstinline!ms3! -- iterativni algoritem zlivanja od spodaj navzgor,
+\end{itemize}
+ter različice z \lstinline!_idx! (kot pri \lstinline!bf! in \lstinline!is!).
+
+\subsection{Hibridni algoritmi}
+
+Po preliminarnem testiranju sem zasnoval še nekaj hibridnih algortimov.
+\begin{itemize}
+\item
+\lstinline!ms2_is2a! -- algoritem \lstinline!ms2!, ki za zaporedja krajša od 42 uporablja algoritem \lstinline!is2a!,
+\item
+\lstinline!ms2_is2! -- algoritem \lstinline!ms2!, ki za zaporedja krajša od 17 uporablja algoritem \lstinline!is2!,
+\item
+\lstinline!ms3_is2! -- algoritem \lstinline!ms3!, ki na začetku uporablja algoritem \lstinline!is2! na četah dolžine 17.
+\end{itemize}
+
+Verzije \lstinline!ms3_is2a! nisem implementiral, ker sem algoritem \lstinline!is2a! dodal šele čisto na koncu, ko sem opazil, da pri majhnih velikosti \lstinline!is2! ni tako učinkovit.
+
+\section{Priprava in izvedba eksperimentov}
+
+\subsection{Testno okolje}
+
+Vsi eksperimenti so bili izvedeni na prenosnem računalniku \emph{Acer V3-371} s procesorjem \emph{Intel Core i3-4030U} in 4 GB delovnega pomnilnika. Operacijski sistem na računalniku je bil \emph{Arch Linux}, ki ga poganja jedro \emph{Linux 4.5.4}.
+
+Testni program je bil preveden s prevajalnikom \emph{g++ (GCC) 6.1.1 20160501}. Uporabljene so bile zastavice \lstinline!-std=c++14 -O3 -march=native -mtune=native!.
+
+\subsection{Testni scenariji}
+
+Algoritmi so bili preizkušeni na sledečih testnih scenarijih
+\begin{itemize}
+\item \lstinline!tiny-inc! -- velikosti od 10 do 200, naraščajoča zaporedja,
+\item \lstinline!tiny-dec! -- velikosti od 10 do 200, padajoča zaporedja,
+\item \lstinline!tiny-rnd! -- velikosti od 10 do 200, naključne permutacije,
+
+\item \lstinline!small-inc! -- velikosti od 1000 do 9000, naraščajoča zaporedja,
+\item \lstinline!small-dec! -- velikosti od 1000 do 9000, padajoča zaporedja,
+\item \lstinline!small-rnd! -- velikosti od 1000 do 9000, naključne permutacije,
+
+\item \lstinline!medium-inc! -- velikosti od 10~000 do 90~000, naraščajoča zaporedja,
+\item \lstinline!medium-dec! -- velikosti od 10~000 do 90~000, padajoča zaporedja,
+\item \lstinline!medium-rnd! -- velikosti od 10~000 do 90~000, naključne permutacije,
+
+\item \lstinline!large-inc! -- velikosti od 100~000 do 10~000~000, naraščajoča zaporedja,
+\item \lstinline!large-dec! -- velikosti od 100~000 do 10~000~000, padajoča zaporedja,
+\item \lstinline!large-rnd! -- velikosti od 100~000 do 10~000~000, naključne permutacije.
+\end{itemize}
+Algoritmi so razdeljeni v dve skupini
+\begin{itemize}
+\item \lstinline!slow_algs! -- \lstinline!bf!, \lstinline!bf_idx!, \lstinline!is1!, \lstinline!is1_idx!, \lstinline!is2a!, \lstinline!is2!, \lstinline!is2_idx!,
+\item \lstinline!fast_algs! -- \lstinline!ms1!, \lstinline!ms1_idx!, \lstinline!ms2!, \lstinline!ms2_idx!, \lstinline!ms3!, \lstinline!ms3_idx!, \lstinline!ms2_is2a!, \lstinline!ms2_is2!, \lstinline!ms3_is2!,
+\end{itemize}
+
+Testni scenariji \lstinline!tiny-*!, \lstinline!small-*! in \lstinline!medium-*! so bili preizkušeni na obeh skupinah algoritmov. Testni scenariji \lstinline!large-*! pa le na \lstinline!fast-algs!.
+
+\subsection{Izvedba eksperimentov}
+
+Testni program je zasnovan tako, da omogoča testiranje več algoritmov v enem zagonu, kjer algoritme podamo v argumentih ločene z vejicami. Primer zagona testnega programa je
+\begin{lstlisting}
+./inversions bf,is1,is2 10000 rnd 3.
+\end{lstlisting}
+Zgornji primer prikazuje testiranje algoritmov \lstinline!bf!, \lstinline!is1! ter \lstinline!is2! na treh naključnih zaporedjih dolžine 10~000.
+
+Takšen pristop omogoča, da vse tri algoritme izvedemo na istih naključno generiranih zaporedjih ter tako odstranimo nevarnost, da bi algoritme testirali na neprimerljivih vhodnih zaporedjih.
+
+Testni program (\lstinline!./inversions!, implementiran v \lstinline!src/test_inversions.cpp!) rezultate testiranja izpiše na standardni izhod. Za vsak podani algoritem izpiše po eno vrstico, ki vsebuje z vejicami ločene naslednje podatke:
+\begin{itemize}
+\item ime algoritma,
+\item velikost zaporedja
+\item tip zaporedja (\lstinline!inc!, \lstinline!dec!, \lstinline!rnd!),
+\item število testnih zaporedji (tj. ponovitev poskusa)
+\item skupno število inverzij v vseh testnih primerih,
+\item skupni čas izvajanja v milisekundah.
+\end{itemize}
+
+Izvajanje algoritmov je avtomatizirano v skripti \lstinline!run_tests.sh!, ki zažene testni program \lstinline!inverisions! za vse testne scenarije. Celoten eksperiment lahko izvedemo z ukazom
+\begin{lstlisting}
+./run_tests.sh > test_results.csv
+\end{lstlisting}
+
+\section{Analiza rezultatov}
+
+Na slikah \ref{fig:small}, \ref{fig:medium}, \ref{fig:medium-fast} in \ref{fig:large-fast} so prikazani rezltati testiranja. Na vseh slikah so algoritmi iz skupine \lstinline!slow_algs! označeni s prekinjeno črto, algoritmi iz skupine \lstinline!fast_algs! pa z neprekinjeno.
+
+Že pri testnem scenariju small (slika \ref{fig:small}) vidimo, da je pristop na podlagi urejanja z zlivanjem veliko bolj učinkovit.
+
+Pri scenarijih \lstinline!small-*! in \lstinline!medium-*! (sliki \ref{fig:small} in \ref{fig:medium}) vidimo, da je izmed \lstinline!slow_algs! najbolj učinkovit algoritem \lstinline!is2!, ki uporablja \lstinline!std::upper_bound! in \lstinline!std::rotate!. Sklepam, da je razlog za to v učinkoviti implementaciji \lstinline!std::rotate!.
+
+Na sliki \ref{fig:medium-fast} so prikazani rezultati testiranja \lstinline!fast_algs! na testnih scenarijih \lstinline!medium-*!. Vidimo, da je najbolj učinkovit hibridni algoritmem \lstinline!ms2_is2a!. Izmed \lstinline!ms1!, \lstinline!ms2! in \lstinline!ms3! pa je v vseh primerih najboljši iterativni algoritem \lstinline!ms3!. Podobno lahko sklepamo na podlagi testnih scenarijev \lstinline!large-*! (slika \ref{fig:large-fast}).
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/small-inc.pdf}
+\includegraphics[width=\textwidth]{graphics/small-dec.pdf}
+\includegraphics[width=\textwidth]{graphics/small-rnd.pdf}
+\caption{Testni scenariji \lstinline!small-*!.}
+\label{fig:small}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/medium-inc.pdf}
+\includegraphics[width=\textwidth]{graphics/medium-dec.pdf}
+\includegraphics[width=\textwidth]{graphics/medium-rnd.pdf}
+\caption{Testni scenariji \lstinline!medium-*!.}
+\label{fig:medium}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/medium-inc-fast.pdf}
+\includegraphics[width=\textwidth]{graphics/medium-dec-fast.pdf}
+\includegraphics[width=\textwidth]{graphics/medium-rnd-fast.pdf}
+\caption{Testni scenariji \lstinline!medium-*!, samo \lstinline!fast_algs!.}
+\label{fig:medium-fast}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/large-inc-fast.pdf}
+\includegraphics[width=\textwidth]{graphics/large-dec-fast.pdf}
+\includegraphics[width=\textwidth]{graphics/large-rnd-fast.pdf}
+\caption{Testni scenariji \lstinline!large-*!.}
+\label{fig:large-fast}
+\end{figure}
+
+\subsection{Testni scenariji \lstinline!tiny-*!}
+
+Za testiranje na zelo majhnih nalogah sem zasnoval testne scenarije \lstinline!tiny-*!, kjer so velikosti vhodov od 10 do 200.
+
+Za testiranje algoritmov v tem scenariju je za dobre rezultate potrebnih veliko ponovitev algoritma. Da sem čim bolj odstranih druge dejavnike na hitrost izvajanja sem testiranje v programu \lstinline!inversions! izvedel z makrom in ne s funkcijo ter tako odstranil odvečne klice funkcij. Makro je definiran v datoteki \lstinline!src/test_utilities.hpp! z imenom \lstinline!TEST!.
+
+Rezultati so prikazani na slikah \ref{fig:tiny} in \ref{fig:tiny-slow}.
+
+Pri velikostih zaporedji od 100 do 200 so rezultati zelo odvisni od tipa zaporedja. Pri naraščajočih zaporedjih je najboljši \lstinline!is2a!, saj pri takšnih zaporedjih ne izvede nobenih premikov elementov. Pri padajočih sta najboljša \lstinline!ms3! in hibridni algoritem \lstinline!ms2_is2a!, ki na koncu uporablja \lstinline!is2a!. Pri naključnih nalogah je najboljši \lstinline!bf!, saj pri njem ni potrebno kopirati vhodnega zaporedja.
+
+Pri krajših zaporedjih (dolžina pod 40) so bolj učinkoviti \lstinline!slow_algs! (slika \ref{fig:tiny-slow}). Posebej zanimivo je, da je pri tako kratkih zaporedjih algoritem \lstinline!is2a! hitrejši kot \lstinline!is2!.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/tiny-inc.pdf}
+\includegraphics[width=\textwidth]{graphics/tiny-dec.pdf}
+\includegraphics[width=\textwidth]{graphics/tiny-rnd.pdf}
+\caption{Testni scenariji \lstinline!tiny-*!.}
+\label{fig:tiny}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{graphics/tiny-inc-slow.pdf}
+\includegraphics[width=\textwidth]{graphics/tiny-dec-slow.pdf}
+\includegraphics[width=\textwidth]{graphics/tiny-rnd-slow.pdf}
+\caption{Testni scenariji \lstinline!tiny-*!, samo \lstinline!slow_algs!.}
+\label{fig:tiny-slow}
+\end{figure}
+
+\subsection{Hibridni algoritmi}
+
+V prejšnjih razdelkih smo videli (, če odmislimo rezultate hibridnih algoritmov), da je najbolje deloval iterativni algoritem \lstinline!ms3!, drugi najboljši je bil rekurzivni \lstinline!ms2!.
+
+Na podlagi obeh sem zasnoval hibridna algoritma \lstinline!ms3_is2! in \lstinline!ms2_is2! za katera sem na podlagi preliminarnega testiranja določil rez pri dolžini zaporedja 17. Presenetljivo je, da je algoritem \lstinline!ms3_is2! veliko slabši od algoritma \lstinline!ms3! (slika \ref{fig:large-fast}). Algoritem \lstinline!ms2_is2! pa celo prehiti \lstinline!ms3!.
+
+Pri testnih scenarijih \lstinline!tiny-*! smo videli, da je za najkrajša zaporedja najboljši algoritem \lstinline!is2a!. Zato sem implementiral še hibridni algoritem \lstinline!ms2_is2a!, ki se je izkazal za najučinkovitejšega (glej sliki \ref{fig:medium-fast} in \ref{fig:large-fast}). Pri tem algoritmu sem s testiranjem določil, da je primerna meja za uporabo algoritma \lstinline!is2a! nekje med dolžinama zaporedji 40 in 60. Zato sem jo nastavil na 42.
+
+\subsection{Primerjava med indeksi in iteratorji}
+
+Na sliki \ref{fig:idx} je prikazana primerjava med različicami algoritmov glede na uporabo iteratorjev. Vidimo, da so različice z iteratorji v vseh primerih hitrejše. Še posebej izrazita je razlika pri algoritmu \lstinline!is2!, saj pri njem v različici z iteratorji lahko uporabimo funkcijo \lstinline!std::rotate!.
+
+\begin{figure}
+\includegraphics[width=0.5\textwidth]{graphics/bf.pdf}%
+\includegraphics[width=0.5\textwidth]{graphics/is1.pdf}
+\includegraphics[width=0.5\textwidth]{graphics/is2.pdf}%
+\includegraphics[width=0.5\textwidth]{graphics/ms1.pdf}
+\includegraphics[width=0.5\textwidth]{graphics/ms2.pdf}%
+\includegraphics[width=0.5\textwidth]{graphics/ms3.pdf}
+\caption{Primerjava med hitrostjo algoritmov, če uporabljamo iteratorje ali pa elemente naslavljamo z indeksi.}
+\label{fig:idx}
+\end{figure}
 
 \end{document}

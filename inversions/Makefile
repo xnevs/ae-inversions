@@ -1,5 +1,5 @@
 CXX=g++
-CXX_FLAGS=-std=c++14 -O3 -march=native -mtune=native -Wall -Wextra -Wshadow
+CXX_FLAGS=-std=c++14 -O3 -march=native -mtune=native -flto -Wall -Wextra -Wshadow
 
 test: build/test_inversions.o build/inversions.o
 	$(CXX) $(CXX_FLAGS) -o inversions build/test_inversions.o build/inversions.o
