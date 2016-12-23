@@ -81,17 +81,17 @@ std::vector<int> generate(std::vector<int>::size_type n, Seq seq, URNG && gen) {
 }
 
 #define TEST(f, test_cases) \
-do {                                                  \
+do {                                                                           \
     decltype((f)((test_cases).front())) _TEST_count = 0;                       \
     std::chrono::time_point<std::chrono::steady_clock> _TEST_start, _TEST_end; \
     _TEST_start = std::chrono::steady_clock::now();                            \
-    for(auto const & _TEST_a : (test_cases)) {                                   \
+    for(auto const & _TEST_a : (test_cases)) {                                 \
         _TEST_count += (f)((_TEST_a));                                         \
     }                                                                          \
     _TEST_end = std::chrono::steady_clock::now();                              \
     auto _TEST_elapsed = std::chrono::duration_cast<std::chrono::milliseconds> \
                                                    (_TEST_end - _TEST_start);  \
-    cout << #f+11 << "," << n << "," << seq << "," << rep << ","               \
+    std::cout << #f+11 << "," << n << "," << seq << "," << rep << ","          \
          << _TEST_count << "," << _TEST_elapsed.count() << endl;               \
 } while(0)
     //std::chrono::duration<double> _TEST_elapsed = _TEST_end - _TEST_start; 
